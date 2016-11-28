@@ -39,10 +39,10 @@ pub fn solve(inst: &Instancia,
 }
 
 #[allow(dead_code)]
-fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
-                                        inst: &Instancia,
-                                        alfa: f64)
-                                        -> Option<Sequencia> {
+fn earliest_due_date<R: Rng + Sized>(rng: &mut R,
+                                     inst: &Instancia,
+                                     alfa: f64)
+                                     -> Option<Sequencia> {
     let num_tarefas = inst.num_tarefas();
     let mut sequencia = Vec::with_capacity(num_tarefas);
     let mut marcados = vec![false; num_tarefas];
@@ -54,8 +54,8 @@ fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
     num_marcados += 1;
 
     while num_marcados < num_tarefas {
-        let atual = sequencia[sequencia.len() - 1];
-        let abertos: Vec<(IdTarefa, usize)> = vec![];
+        let abertos: Vec<(IdTarefa, usize)> =
+            (0..num_tarefas).enumerate().filter(|&(_, t)| !marcados[t]).collect();
         let num_candidatos = (abertos.len() as f64 * alfa).ceil() as usize;
         if num_candidatos == 0 {
             return None;
@@ -73,7 +73,7 @@ fn vizinho_mais_proximo<R: Rng + Sized>(mut rng: &mut R,
 #[allow(dead_code)]
 fn construcao<R: Rng + Sized>(mut rng: &mut R, inst: &Instancia, alfa: f64) -> Solucao {
     loop {
-        if let Some(seq) = vizinho_mais_proximo(&mut rng, inst, alfa) {
+        if let Some(seq) = earliest_due_date(&mut rng, inst, alfa) {
             return Solucao::new(inst, seq);
         }
     }
