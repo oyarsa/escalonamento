@@ -19,7 +19,8 @@ pub fn solve(inst: &Instancia,
              // método de seleção: Torneio-2, Torneio-4, Roleta
              mut_chance: f64 /* 0.05 0.10 0.20 */)
              -> (Solucao, u64) {
-    let mut pop = populacao_inicial(inst, pop_tam);
+    let mut rng = rand::weak_rng();
+    let mut pop = populacao_inicial(&mut rng, inst, pop_tam);
     let mut best_fo = pop[0].fo();
     let mut it = 0;
     let mut it_melhor = 0;
@@ -29,8 +30,8 @@ pub fn solve(inst: &Instancia,
     while it - it_melhor < max_iter && t.elapsed() < timeout {
         let filhos;
         {
-            let pais = selecao(&pop, xo_num);
-            filhos = recombinacao(inst, pais, mut_chance);
+            let pais = selecao(&mut rng, &pop, xo_num);
+            filhos = recombinacao(&mut rng, inst, pais, mut_chance);
         }
         pop = proxima_geracao(pop, filhos, pop_tam);
 
@@ -56,8 +57,8 @@ fn gen_roleta(pop: &Populacao) -> Vec<f32> {
 }
 
 #[allow(dead_code)]
-fn get_index_from_roleta(roleta: &[f32]) -> usize {
-    let x = rand::thread_rng().next_f32();
+fn get_index_from_roleta<R: Rng + Sized>(mut rng: &mut R, roleta: &[f32]) -> usize {
+    let x = rng.next_f32();
     for (i, &prob) in roleta.iter().enumerate() {
         if x <= prob {
             return i;
@@ -67,17 +68,23 @@ fn get_index_from_roleta(roleta: &[f32]) -> usize {
 }
 
 #[allow(dead_code)]
-fn seleciona_pais<'a>(pop: &'a Populacao, roleta: &[f32]) -> (&'a Sequencia, &'a Sequencia) {
-    let pai1 = pop[get_index_from_roleta(roleta)].sequencia();
-    let pai2 = pop[get_index_from_roleta(roleta)].sequencia();
+fn seleciona_pais<'a, R: Rng + Sized>(mut rng: &mut R,
+                                      pop: &'a Populacao,
+                                      roleta: &[f32])
+                                      -> (&'a Sequencia, &'a Sequencia) {
+    let pai1 = pop[get_index_from_roleta(rng, roleta)].sequencia();
+    let pai2 = pop[get_index_from_roleta(rng, roleta)].sequencia();
     (pai1, pai2)
 }
 
 #[allow(dead_code)]
-fn selecao(pop: &Populacao, xo_num: usize) -> Vec<(&Sequencia, &Sequencia)> {
+fn selecao<'a, R: Rng + Sized>(mut rng: &mut R,
+                               pop: &'a Populacao,
+                               xo_num: usize)
+                               -> Vec<(&'a Sequencia, &'a Sequencia)> {
     let roleta = gen_roleta(pop);
     (0..xo_num)
-        .map(|_| seleciona_pais(pop, &roleta))
+        .map(|_| seleciona_pais(rng, pop, &roleta))
         .collect()
 }
 
@@ -91,48 +98,49 @@ fn proxima_geracao(atual: Populacao, filhos: Populacao, pop_tam: usize) -> Popul
 }
 
 #[allow(dead_code)]
-fn populacao_inicial(inst: &Instancia, pop_tam: usize) -> Populacao {
-    let mut pop = (0..pop_tam).map(|_| individuo_aleatorio(inst)).collect::<Vec<_>>();
+fn populacao_inicial<R: Rng + Sized>(mut rng: &mut R,
+                                     inst: &Instancia,
+                                     pop_tam: usize)
+                                     -> Populacao {
+    let mut pop = (0..pop_tam).map(|_| individuo_aleatorio(rng, inst)).collect::<Vec<_>>();
     pop.sort_by_key(Solucao::fo);
     pop
 }
 
 #[allow(dead_code)]
-fn individuo_aleatorio(inst: &Instancia) -> Solucao {
-    Solucao::new(inst, sequencia_aleatoria(inst))
+fn individuo_aleatorio<R: Rng + Sized>(mut rng: &mut R, inst: &Instancia) -> Solucao {
+    Solucao::new(inst, sequencia_aleatoria(rng, inst))
 }
 
 #[allow(dead_code)]
-fn sequencia_aleatoria(inst: &Instancia) -> Sequencia {
+fn sequencia_aleatoria<R: Rng + Sized>(mut rng: &mut R, inst: &Instancia) -> Sequencia {
     let num_tarefas = inst.num_tarefas();
     let mut seq: Vec<_> = (0..num_tarefas).collect();
-    rand::thread_rng().shuffle(seq.as_mut_slice());
+    rng.shuffle(seq.as_mut_slice());
     seq
 }
 
 #[allow(dead_code)]
-fn two_opt_aleatorio(mut sequencia: Sequencia) -> Sequencia {
-    let (i, k) = gen_points(sequencia.len());
+fn two_opt_aleatorio<R: Rng + Sized>(mut rng: &mut R, mut sequencia: Sequencia) -> Sequencia {
+    let (i, k) = gen_points(rng, sequencia.len());
     sequencia[i..k].reverse();
     sequencia
 }
 
 #[allow(dead_code)]
-fn gen_points(num_tarefas: usize) -> (IdTarefa, IdTarefa) {
-    let mut rng = rand::thread_rng();
-
+fn gen_points<R: Rng + Sized>(mut rng: &mut R, num_tarefas: usize) -> (IdTarefa, IdTarefa) {
     let i = rng.gen::<IdTarefa>() % num_tarefas;
     let j = rng.gen::<IdTarefa>() % num_tarefas;
 
     (min(i, j), max(i, j))
 }
 
-fn pmx_crossover(pai1: &Sequencia, pai2: &Sequencia) -> Sequencia {
+fn pmx_crossover<R: Rng + Sized>(mut rng: &mut R, pai1: &Sequencia, pai2: &Sequencia) -> Sequencia {
     let num_tarefas = pai1.len();
 
     let mut genes = pai1.clone();
     let mut map = vec![0; num_tarefas + 1];
-    let (xbegin, xend) = gen_points(num_tarefas);
+    let (xbegin, xend) = gen_points(rng, num_tarefas);
 
     for (i, &vert) in genes.iter().enumerate() {
         map[vert] = i;
@@ -150,12 +158,15 @@ fn pmx_crossover(pai1: &Sequencia, pai2: &Sequencia) -> Sequencia {
 }
 
 #[allow(dead_code)]
-fn ordered_crossover(pai1: &Sequencia, pai2: &Sequencia) -> Sequencia {
+fn ordered_crossover<R: Rng + Sized>(mut rng: &mut R,
+                                     pai1: &Sequencia,
+                                     pai2: &Sequencia)
+                                     -> Sequencia {
     let num_tarefas = pai1.len();
 
     let mut filho = vec![None; num_tarefas];
     let mut marcados = vec![false; num_tarefas];
-    let (xbegin, xend) = gen_points(num_tarefas);
+    let (xbegin, xend) = gen_points(rng, num_tarefas);
 
     // Drop the swath
     for i in xbegin..xend {
@@ -181,30 +192,31 @@ fn ordered_crossover(pai1: &Sequencia, pai2: &Sequencia) -> Sequencia {
 }
 
 #[allow(dead_code)]
-fn recombinacao(inst: &Instancia,
-                pais: Vec<(&Sequencia, &Sequencia)>,
-                mut_chance: f64)
-                -> Populacao {
+fn recombinacao<R: Rng + Sized>(mut rng: &mut R,
+                                inst: &Instancia,
+                                pais: Vec<(&Sequencia, &Sequencia)>,
+                                mut_chance: f64)
+                                -> Populacao {
     pais.iter()
-        .map(|&(pai1, pai2)| pmx_crossover(pai1, pai2))
-        .chain(pais.iter().map(|&(pai2, pai1)| pmx_crossover(pai2, pai1)))
-        .map(|c| mutacao(c, mut_chance))
+        .map(|&(pai1, pai2)| pmx_crossover(rng, pai1, pai2))
+        .chain(pais.iter().map(|&(pai2, pai1)| pmx_crossover(rng, pai2, pai1)))
+        .map(|c| mutacao(rng, c, mut_chance))
         .map(|c| Solucao::new(inst, c))
         .collect()
 }
 
 #[allow(dead_code)]
-fn swap_vertices(mut sequencia: Sequencia) -> Sequencia {
-    let (i, j) = gen_points(sequencia.len());
+fn swap_vertices<R: Rng + Sized>(mut rng: &mut R, mut sequencia: Sequencia) -> Sequencia {
+    let (i, j) = gen_points(rng, sequencia.len());
     sequencia.swap(i, j);
     sequencia
 }
 
 #[allow(dead_code)]
-fn mutacao(sequencia: Sequencia, mut_chance: f64) -> Sequencia {
-    if rand::thread_rng().gen::<f64>() < mut_chance {
-        swap_vertices(sequencia)
-        // two_opt_aleatorio(sequencia)
+fn mutacao<R: Rng + Sized>(mut rng: &mut R, sequencia: Sequencia, mut_chance: f64) -> Sequencia {
+    if rng.gen::<f64>() < mut_chance {
+        swap_vertices(rng, sequencia)
+        // two_opt_aleatorio(rng, sequencia)
     } else {
         sequencia
     }
@@ -218,7 +230,6 @@ pub struct Ag<'a> {
     xo_chance: f64,
     mut_chance: f64,
 }
-
 impl<'a> Ag<'a> {
     #[allow(dead_code)]
     pub fn new(inst: &Instancia) -> Ag {
