@@ -99,42 +99,15 @@ fn populacao_inicial(inst: &Instancia, pop_tam: usize) -> Populacao {
 
 #[allow(dead_code)]
 fn individuo_aleatorio(inst: &Instancia) -> Solucao {
-    loop {
-        if let Some(sequencia) = sequencia_aleatoria(inst) {
-            return Solucao::new(inst, sequencia);
-        }
-    }
+    Solucao::new(inst, sequencia_aleatoria(inst))
 }
 
 #[allow(dead_code)]
-fn sequencia_aleatoria(inst: &Instancia) -> Option<Sequencia> {
-    let mut rng = rand::thread_rng();
+fn sequencia_aleatoria(inst: &Instancia) -> Sequencia {
     let num_tarefas = inst.num_tarefas();
-    let mut sequencia = Vec::with_capacity(num_tarefas);
-    let mut marcados = vec![false; num_tarefas];
-    let mut num_marcados = 0;
-
-    let inicial = rng.gen::<IdTarefa>() % num_tarefas;
-    sequencia.push(inicial);
-    marcados[inicial] = true;
-    num_marcados += 1;
-
-    while num_marcados < num_tarefas {
-        let abertos = (0..num_tarefas)
-            .filter(|&t| !marcados[t])
-            .collect::<Vec<_>>();
-
-        if abertos.is_empty() {
-            return None;
-        }
-
-        let proximo = abertos[rng.gen::<IdTarefa>() % abertos.len()];
-        sequencia.push(proximo);
-        marcados[proximo] = true;
-        num_marcados += 1;
-    }
-
-    Some(sequencia)
+    let mut seq: Vec<_> = (0..num_tarefas).collect();
+    rand::thread_rng().shuffle(seq.as_mut_slice());
+    seq
 }
 
 #[allow(dead_code)]
