@@ -107,7 +107,12 @@ fn experimento_ag(inst: Instancia, config: &[&str]) {
     };
 
     let mut ag = Ag::new(&inst);
-    ag.pop_tam(pop_tam).xo_chance(xo_chance).cruz(cruz).mutacao(mutacao).mut_chance(mut_chance);
+    ag.pop_tam(pop_tam)
+        .xo_chance(xo_chance)
+        .cruz(cruz)
+        .mutacao(mutacao)
+        .mut_chance(mut_chance)
+        .timeout(30);
 
     println!("ID, iExec, FO, IterAlvo, Tempo");
     for i in 0..NUM_EXEC {
