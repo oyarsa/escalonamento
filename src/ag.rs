@@ -24,7 +24,7 @@ pub fn solve(inst: &Instancia,
     let mut best_fo = pop[0].fo();
     let mut it = 0;
     let mut it_melhor = 0;
-    let xo_num = (xo_chance * pop_tam as f64).ceil() as usize;
+    let xo_num = ((xo_chance * pop_tam as f64) / 2.0).floor() as usize;
     let t = Instant::now();
 
     while it - it_melhor < max_iter && t.elapsed() < timeout {
@@ -89,11 +89,15 @@ fn selecao<'a, R: Rng + Sized>(rng: &mut R,
 }
 
 #[allow(dead_code)]
-fn proxima_geracao(atual: Populacao, filhos: Populacao, pop_tam: usize) -> Populacao {
+fn proxima_geracao(atual: Populacao, mut filhos: Populacao, pop_tam: usize) -> Populacao {
     let mut proxima = atual;
-    proxima.extend(filhos.into_iter());
+    let begin = pop_tam - filhos.len();
+
+    for i in begin..pop_tam {
+        proxima[i] = filhos.pop().expect("Erro ao gerar próxima geração");
+    }
+
     proxima.sort_by_key(Solucao::fo);
-    proxima.truncate(pop_tam);
     proxima
 }
 
