@@ -78,7 +78,7 @@ fn seleciona_pais<'a, R: Rng + Sized>(mut rng: &mut R,
 }
 
 #[allow(dead_code)]
-fn selecao<'a, R: Rng + Sized>(mut rng: &mut R,
+fn selecao<'a, R: Rng + Sized>(rng: &mut R,
                                pop: &'a Populacao,
                                xo_num: usize)
                                -> Vec<(&'a Sequencia, &'a Sequencia)> {
@@ -98,11 +98,8 @@ fn proxima_geracao(atual: Populacao, filhos: Populacao, pop_tam: usize) -> Popul
 }
 
 #[allow(dead_code)]
-fn populacao_inicial<R: Rng + Sized>(mut rng: &mut R,
-                                     inst: &Instancia,
-                                     pop_tam: usize)
-                                     -> Populacao {
-    let mut pop = (0..pop_tam).map(|_| individuo_aleatorio(rng, inst)).collect::<Vec<_>>();
+fn populacao_inicial<R: Rng + Sized>(rng: &mut R, inst: &Instancia, pop_tam: usize) -> Populacao {
+    let mut pop: Vec<_> = (0..pop_tam).map(|_| individuo_aleatorio(rng, inst)).collect();
     pop.sort_by_key(Solucao::fo);
     pop
 }
@@ -191,17 +188,29 @@ fn ordered_crossover<R: Rng + Sized>(mut rng: &mut R,
     filho.into_iter().map(|o| o.expect("Erro no OX")).collect()
 }
 
+fn cruzamento<R: Rng + Sized>(mut rng: &mut R,
+                              pais: Vec<(&Sequencia, &Sequencia)>)
+                              -> Vec<Sequencia> {
+    let mut filhos = Vec::with_capacity(2 * pais.len());
+
+    for (pai1, pai2) in pais {
+        filhos.push(pmx_crossover(rng, pai1, pai2));
+        filhos.push(pmx_crossover(rng, pai2, pai1));
+    }
+
+    filhos
+}
+
 #[allow(dead_code)]
 fn recombinacao<R: Rng + Sized>(mut rng: &mut R,
                                 inst: &Instancia,
                                 pais: Vec<(&Sequencia, &Sequencia)>,
                                 mut_chance: f64)
                                 -> Populacao {
-    pais.iter()
-        .map(|&(pai1, pai2)| pmx_crossover(rng, pai1, pai2))
-        .chain(pais.iter().map(|&(pai2, pai1)| pmx_crossover(rng, pai2, pai1)))
-        .map(|c| mutacao(rng, c, mut_chance))
-        .map(|c| Solucao::new(inst, c))
+    cruzamento(rng, pais)
+        .into_iter()
+        .map(|seq| mutacao(rng, seq, mut_chance))
+        .map(|seq| Solucao::new(inst, seq))
         .collect()
 }
 
