@@ -13,7 +13,12 @@ use ag::Ag;
 fn teste_grasp(inst: &Instancia) {
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it) = Grasp::new(inst).max_iter(40).timeout(INF as u64).solve();
+    let (solucao, it) = Grasp::new(inst)
+        .max_iter(INF as u64)
+        .timeout(5)
+        .alfa(0.3)
+        .num_vizinhos(50)
+        .solve();
     let tempo = t.elapsed();
 
     println!("Sequencia: {:?}", solucao.sequencia());
@@ -48,14 +53,28 @@ fn main() {
 
     let inst: Instancia = match args.len() {
         1 => Instancia::toy(),
-        2 => Instancia::from_arquivo(&args[1]),
+        2...3 => Instancia::from_arquivo(&args[1]),
         _ => {
             println!("Opções inválidas");
             process::exit(1);
         }
     };
 
-    teste_ag(&inst);
+    match args.len() {
+        3 => {
+            match args[2].as_ref() {
+                "-grasp" => teste_grasp(&inst),
+                "-ag" => teste_ag(&inst),
+                _ => {
+                    println!("Algoritmo inválido");
+                    process::exit(1);
+                }
+            }
+        }
+        _ => println!("Escolha um algoritmo (-grasp ou -ag)"),
+    }
+
+    // teste_ag(&inst);
     // teste_grasp(&inst);
     // teste();
 }

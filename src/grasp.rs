@@ -54,15 +54,17 @@ fn earliest_due_date<R: Rng + Sized>(rng: &mut R,
     num_marcados += 1;
 
     while num_marcados < num_tarefas {
-        let abertos: Vec<(IdTarefa, usize)> =
-            (0..num_tarefas).enumerate().filter(|&(_, t)| !marcados[t]).collect();
+        let mut abertos: Vec<_> = (0..num_tarefas).filter(|t| !marcados[*t]).collect();
+        abertos.sort_by_key(|t| inst.tarefa(*t).entrega());
+
         let num_candidatos = (abertos.len() as f64 * alfa).ceil() as usize;
         if num_candidatos == 0 {
             return None;
         }
 
-        let (proximo, _) = abertos[rng.gen::<IdTarefa>() % num_candidatos];
+        let proximo = abertos[rng.gen::<IdTarefa>() % num_candidatos];
         sequencia.push(proximo);
+
         marcados[proximo] = true;
         num_marcados += 1;
     }
@@ -114,11 +116,11 @@ fn two_opt_loop(inst: &Instancia, solucao: &Solucao) -> Option<Solucao> {
 }
 
 #[allow(dead_code)]
-fn busca_local(inst: &Instancia, s: Solucao, num_vizinhos: u32) -> Solucao {
-    (0..num_vizinhos)
-        .map(|_| busca_local_vizinho(inst, &s))
-        .min_by_key(Solucao::fo)
-        .unwrap_or(s)
+fn busca_local(inst: &Instancia, mut s: Solucao, num_vizinhos: u32) -> Solucao {
+    for _ in 0..num_vizinhos {
+        s = busca_local_vizinho(inst, &s);
+    }
+    s
 }
 
 pub struct Grasp<'a> {

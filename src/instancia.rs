@@ -51,7 +51,7 @@ impl Instancia {
 
         let mut num_line = String::new();
         file.read_line(&mut num_line).unwrap();
-        let n: usize = num_line.parse().expect("Erro ao ler o número de tarefas");
+        let n: usize = num_line.trim().parse().expect("Erro ao ler o número de tarefas");
 
         Instancia(file.lines()
             .take(n)
