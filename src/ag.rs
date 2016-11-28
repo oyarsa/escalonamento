@@ -120,8 +120,9 @@ fn sequencia_aleatoria(inst: &Instancia) -> Option<Sequencia> {
     num_marcados += 1;
 
     while num_marcados < num_tarefas {
-        let atual = sequencia[sequencia.len() - 1];
-        let abertos = vec![];
+        let abertos = (0..num_tarefas)
+            .filter(|&t| !marcados[t])
+            .collect::<Vec<_>>();
 
         if abertos.is_empty() {
             return None;
