@@ -8,15 +8,26 @@ use instancia::{Instancia, IdTarefa, Solucao, Sequencia};
 
 type Populacao = Vec<Solucao>;
 
+#[derive(Clone, Copy)]
+pub enum Cruzamento {
+    OX,
+    PMX,
+}
+
+#[derive(Clone, Copy)]
+pub enum Mutacao {
+    Swap,
+    TwoOpt,
+}
+
 #[allow(dead_code)]
 pub fn solve(inst: &Instancia,
              timeout: Duration, // 30s
              max_iter: u64, // INF
-             pop_tam: usize, // 250, 500, 1000
+             pop_tam: usize, // 250, 500
              xo_chance: f64, // 0.95, 0.99
-             // metodo de cruzamento: OX, PMX
-             // método de mutação: Swap, 2-opt
-             // método de seleção: Torneio-2, Torneio-4, Roleta
+             cruz: Cruzamento, // metodo de cruzamento: OX, PMX
+             mutacao: Mutacao, // método de mutação: Swap, 2-opt
              mut_chance: f64 /* 0.05 0.10 0.20 */)
              -> (Solucao, u64) {
     let mut rng = rand::weak_rng();
@@ -31,7 +42,7 @@ pub fn solve(inst: &Instancia,
         let filhos;
         {
             let pais = selecao(&mut rng, &pop, xo_num);
-            filhos = recombinacao(&mut rng, inst, pais, mut_chance);
+            filhos = recombinacao(&mut rng, inst, pais, mut_chance, cruz, mutacao);
         }
         pop = proxima_geracao(pop, filhos, pop_tam);
 
@@ -193,13 +204,18 @@ fn ordered_crossover<R: Rng + Sized>(mut rng: &mut R,
 }
 
 fn cruzamento<R: Rng + Sized>(mut rng: &mut R,
+                              cruz: Cruzamento,
                               pais: Vec<(&Sequencia, &Sequencia)>)
                               -> Vec<Sequencia> {
     let mut filhos = Vec::with_capacity(2 * pais.len());
+    let cruz_op = match cruz {
+        Cruzamento::PMX => pmx_crossover,
+        Cruzamento::OX => ordered_crossover,
+    };
 
     for (pai1, pai2) in pais {
-        filhos.push(pmx_crossover(rng, pai1, pai2));
-        filhos.push(pmx_crossover(rng, pai2, pai1));
+        filhos.push(cruz_op(rng, pai1, pai2));
+        filhos.push(cruz_op(rng, pai2, pai1));
     }
 
     filhos
@@ -209,11 +225,13 @@ fn cruzamento<R: Rng + Sized>(mut rng: &mut R,
 fn recombinacao<R: Rng + Sized>(mut rng: &mut R,
                                 inst: &Instancia,
                                 pais: Vec<(&Sequencia, &Sequencia)>,
-                                mut_chance: f64)
+                                mut_chance: f64,
+                                cruz: Cruzamento,
+                                metodo_mut: Mutacao)
                                 -> Populacao {
-    cruzamento(rng, pais)
+    cruzamento(rng, cruz, pais)
         .into_iter()
-        .map(|seq| mutacao(rng, seq, mut_chance))
+        .map(|seq| mutacao(rng, seq, mut_chance, metodo_mut))
         .map(|seq| Solucao::new(inst, seq))
         .collect()
 }
@@ -226,10 +244,17 @@ fn swap_vertices<R: Rng + Sized>(mut rng: &mut R, mut sequencia: Sequencia) -> S
 }
 
 #[allow(dead_code)]
-fn mutacao<R: Rng + Sized>(mut rng: &mut R, sequencia: Sequencia, mut_chance: f64) -> Sequencia {
+fn mutacao<R: Rng + Sized>(mut rng: &mut R,
+                           sequencia: Sequencia,
+                           mut_chance: f64,
+                           metodo_mut: Mutacao)
+                           -> Sequencia {
+    let mut_op = match metodo_mut {
+        Mutacao::Swap => swap_vertices,
+        Mutacao::TwoOpt => two_opt_aleatorio,
+    };
     if rng.gen::<f64>() < mut_chance {
-        swap_vertices(rng, sequencia)
-        // two_opt_aleatorio(rng, sequencia)
+        mut_op(rng, sequencia)
     } else {
         sequencia
     }
@@ -242,6 +267,8 @@ pub struct Ag<'a> {
     pop_tam: usize,
     xo_chance: f64,
     mut_chance: f64,
+    cruz: Cruzamento,
+    mutacao: Mutacao,
 }
 impl<'a> Ag<'a> {
     #[allow(dead_code)]
@@ -253,6 +280,8 @@ impl<'a> Ag<'a> {
             pop_tam: 200,
             xo_chance: 0.8,
             mut_chance: 0.1,
+            cruz: Cruzamento::PMX,
+            mutacao: Mutacao::Swap,
         }
     }
 
@@ -263,6 +292,8 @@ impl<'a> Ag<'a> {
               self.max_iter,
               self.pop_tam,
               self.xo_chance,
+              self.cruz,
+              self.mutacao,
               self.mut_chance)
     }
 
@@ -293,6 +324,18 @@ impl<'a> Ag<'a> {
     #[allow(dead_code)]
     pub fn mut_chance(&mut self, mut_chance: f64) -> &mut Ag<'a> {
         self.mut_chance = mut_chance;
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn cruz(&mut self, cruz: Cruzamento) -> &mut Ag<'a> {
+        self.cruz = cruz;
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn mutacao(&mut self, mutacao: Mutacao) -> &mut Ag<'a> {
+        self.mutacao = mutacao;
         self
     }
 }
