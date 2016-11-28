@@ -9,8 +9,8 @@ use instancia::{Instancia, IdTarefa, Solucao, Sequencia};
 pub fn solve(inst: &Instancia,
              alfa: f64, // 0.3 0.5 0.7
              timeout: Duration, // 30s
-             num_vizinhos: u32, // 5 10 15
-             max_iter: u64)
+             num_vizinhos: u32, // 15 30 60
+             max_iter: u64 /* INF */)
              -> (Solucao, u64) {
     let mut rng = rand::weak_rng();
     let t = Instant::now();
