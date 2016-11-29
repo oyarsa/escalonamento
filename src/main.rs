@@ -6,7 +6,7 @@ use std::env;
 use std::io;
 use std::process;
 use std::time::Instant;
-use instancia::{Instancia, INF};
+use instancia::{Instancia, INF, busca};
 use grasp::Grasp;
 use ag::{Ag, Cruzamento, Mutacao};
 
@@ -165,6 +165,12 @@ fn print_usage() {
     println!("{}", usage);
 }
 
+fn teste_neh(inst: &Instancia) {
+    let s = busca(inst);
+    println!("{:?}", s.sequencia());
+    println!("FO: {}", s.fo());
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -188,6 +194,7 @@ fn main() {
         2 => teste(inst),
         3 => {
             match args[2].as_ref() {
+                "-neh" => teste_neh(&inst),
                 "-grasp" => teste_grasp(&inst),
                 "-ag" => teste_ag(&inst),
                 "-e" => experimento(inst),

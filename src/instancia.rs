@@ -1,7 +1,10 @@
+extern crate rand;
 use std::io::{BufRead, BufReader};
+use std::time::{Duration, Instant};
 use std::path::Path;
 use std::fs::File;
 use std::cmp::max;
+use self::rand::Rng;
 
 pub const INF: i32 = 1e9 as i32;
 
@@ -133,4 +136,54 @@ impl Solucao {
     pub fn fo(&self) -> i32 {
         self.fo
     }
+}
+
+#[allow(dead_code)]
+pub fn neh(inst: &Instancia) -> Solucao {
+    let mut sol = Solucao::new(&inst, vec![]);
+    let n = inst.num_tarefas();
+    let mut seq: Vec<_> = (0..n).collect();
+    seq.sort_by_key(|t| -inst.tarefa(*t).entrega());
+
+    while !seq.is_empty() {
+        let t = seq.pop().unwrap();
+        let mut best: Option<Solucao> = None;
+        for i in 0..sol.sequencia().len() {
+            let mut v = sol.sequencia().clone();
+            v.insert(i, t);
+            let v = Solucao::new(&inst, v);
+            if best.is_none() || v.fo() < best.as_ref().unwrap().fo() {
+                best = Some(v);
+            }
+        }
+        sol = best.unwrap();
+    }
+
+    sol
+}
+
+pub fn busca(inst: &Instancia) -> Solucao {
+    let n = inst.num_tarefas();
+    let mut s: Vec<_> = (0..n).collect();
+    s.sort_by_key(|t| inst.tarefa(*t).entrega() - inst.tarefa(*t).duracao());
+    let mut s = Solucao::new(&inst, s);
+    let mut rng = rand::weak_rng();
+
+    let t = Instant::now();
+    let timeout = Duration::from_secs(5);
+
+    while t.elapsed() < timeout {
+        let t = rng.gen::<IdTarefa>() % n;
+        for j in 0..n {
+            let mut v = s.sequencia().clone();
+            v.retain(|&x| x != t);
+            v.insert(j, t);
+            let v = Solucao::new(&inst, v);
+            if v.fo() < s.fo() {
+                s = v;
+            }
+        }
+    }
+
+    s
 }
