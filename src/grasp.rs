@@ -25,7 +25,7 @@ pub fn solve(inst: &Instancia,
         }
 
         let atual = construcao(&mut rng, inst, alfa);
-        let vizinho = busca_local(inst, atual, num_vizinhos);
+        let vizinho = busca_local(&mut rng, inst, atual, num_vizinhos);
 
         if vizinho.fo() < best.fo() {
             best = vizinho;
@@ -75,11 +75,116 @@ fn earliest_due_date<R: Rng + Sized>(rng: &mut R,
 #[allow(dead_code)]
 fn construcao<R: Rng + Sized>(mut rng: &mut R, inst: &Instancia, alfa: f64) -> Solucao {
     loop {
-        if let Some(seq) = earliest_due_date(&mut rng, inst, alfa) {
-            return Solucao::new(inst, seq);
+        // if let Some(seq) = earliest_due_date(rng, inst, alfa) {
+        //   return Solucao::new(inst, seq);
+        // }
+        if let Some(seq) = neh_semiguloso(rng, inst, alfa) {
+            return seq;
         }
     }
 }
+
+fn neh_semiguloso<R: Rng + Sized>(rng: &mut R, inst: &Instancia, alfa: f64) -> Option<Solucao> {
+    let mut sol = Solucao::new(&inst, vec![]);
+    let n = inst.num_tarefas();
+    let mut seq: Vec<_> = (0..n).collect();
+    seq.sort_by_key(|t| -inst.tarefa(*t).entrega()); // EDD
+
+    while !seq.is_empty() {
+        let num_candidatos = (seq.len() as f64 * alfa).ceil() as usize;
+        if num_candidatos == 0 {
+            return None;
+        }
+        let tidx = rng.gen::<usize>() % num_candidatos;
+        let t = seq.remove(tidx);
+
+        let mut best: Option<Solucao> = None;
+        for i in 0..sol.sequencia().len() + 1 {
+            let mut v = sol.sequencia().clone();
+            v.insert(i, t);
+            let v = Solucao::new(&inst, v);
+            if best.is_none() || v.fo() < best.as_ref().unwrap().fo() {
+                best = Some(v);
+            }
+        }
+        sol = best.unwrap();
+    }
+
+    Some(sol)
+}
+
+fn insercao<R: Rng + Sized>(rng: &mut R, mut seq: Sequencia) -> Sequencia {
+    let tidx = rng.gen::<usize>() % seq.len();
+    let nidx = rng.gen::<usize>() % seq.len();
+    let t = seq.remove(tidx);
+    seq.insert(nidx, t);
+    seq
+}
+
+fn swap<R: Rng + Sized>(rng: &mut R, mut seq: Sequencia) -> Sequencia {
+    let i = rng.gen::<usize>() % seq.len();
+    let j = rng.gen::<usize>() % seq.len();
+    seq.swap(i, j);
+    seq
+}
+
+fn swap_adj<R: Rng + Sized>(rng: &mut R, mut seq: Sequencia) -> Sequencia {
+    let i = rng.gen::<usize>() % (seq.len() - 1);
+    let j = rng.gen::<usize>() % (seq.len() - 1);
+    seq.swap(i, j);
+    seq.swap(i + 1, j + 1);
+    seq
+}
+
+fn swap_xyz<R: Rng + Sized>(rng: &mut R, mut seq: Sequencia) -> Sequencia {
+    let y = rng.gen::<usize>() % (seq.len() - 2) + 1;
+    let x = rng.gen::<usize>() % y;
+    let z = rng.gen::<usize>() % (seq.len() - y - 1) + y;
+    seq.swap(x, z);
+    seq.swap(y, z);
+    seq
+}
+
+fn vnd<R: Rng + Sized>(rng: &mut R,
+                       inst: &Instancia,
+                       solucao: &Solucao,
+                       num_vizinhos: u32)
+                       -> Solucao {
+    let vizinhancas: Vec<fn(&mut R, Sequencia) -> Sequencia> = vec![insercao, swap, swap_adj,
+                                                                    swap_xyz];
+    let mut k = 0;
+    let nv = vizinhancas.len();
+    let mut sbest = solucao.clone();
+
+    while k < nv {
+        let sviz = best_improvement(rng, &sbest, inst, vizinhancas[k], num_vizinhos);
+        if sviz.fo() < sbest.fo() {
+            sbest = sviz;
+            k = 0;
+        } else {
+            k += 1;
+        }
+    }
+
+    sbest
+}
+
+fn best_improvement<R: Rng + Sized>(rng: &mut R,
+                                    solucao: &Solucao,
+                                    inst: &Instancia,
+                                    operador: fn(&mut R, Sequencia) -> Sequencia,
+                                    num_vizinhos: u32)
+                                    -> Solucao {
+    let mut best = solucao.clone();
+    for _ in 0..num_vizinhos {
+        let viz = Solucao::new(inst, operador(rng, solucao.sequencia().clone()));
+        if viz.fo() < best.fo() {
+            best = viz;
+        }
+    }
+    best
+}
+
 fn busca_local_vizinho(inst: &Instancia, solucao: &Solucao) -> Solucao {
     let mut atual = solucao.clone();
     while let Some(nova) = two_opt_loop(inst, &atual) {
@@ -116,11 +221,17 @@ fn two_opt_loop(inst: &Instancia, solucao: &Solucao) -> Option<Solucao> {
 }
 
 #[allow(dead_code)]
-fn busca_local(inst: &Instancia, mut s: Solucao, num_vizinhos: u32) -> Solucao {
-    for _ in 0..num_vizinhos {
-        s = busca_local_vizinho(inst, &s);
-    }
-    s
+fn busca_local<R: Rng + Sized>(rng: &mut R,
+                               inst: &Instancia,
+                               mut s: Solucao,
+                               num_vizinhos: u32)
+                               -> Solucao {
+    // for _ in 0..num_vizinhos {
+    // s = busca_local_vizinho(inst, &s);
+    // }
+    // s
+
+    vnd(rng, inst, &s, num_vizinhos)
 }
 
 pub struct Grasp<'a> {
