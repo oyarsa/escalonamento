@@ -52,6 +52,7 @@ fn teste_ag(inst: &Instancia) {
 }
 
 fn teste(inst: Instancia) {
+    println!("Executando testes...");
     teste_ag(&inst);
     teste_grasp(&inst);
 }

@@ -25,7 +25,7 @@ pub fn solve(inst: &Instancia,
         }
 
         let atual = construcao(&mut rng, inst, alfa);
-        let vizinho = busca_local(&mut rng, inst, atual, num_vizinhos);
+        let vizinho = busca_local(&mut rng, inst, &atual, num_vizinhos);
 
         if vizinho.fo() < best.fo() {
             best = vizinho;
@@ -186,6 +186,7 @@ fn best_improvement<R: Rng + Sized>(rng: &mut R,
     best
 }
 
+#[allow(dead_code)]
 fn busca_local_vizinho(inst: &Instancia, solucao: &Solucao) -> Solucao {
     let mut atual = solucao.clone();
     while let Some(nova) = two_opt_loop(inst, &atual) {
@@ -224,7 +225,7 @@ fn two_opt_loop(inst: &Instancia, solucao: &Solucao) -> Option<Solucao> {
 #[allow(dead_code)]
 fn busca_local<R: Rng + Sized>(rng: &mut R,
                                inst: &Instancia,
-                               mut s: Solucao,
+                               s: &Solucao,
                                num_vizinhos: u32)
                                -> Solucao {
     // for _ in 0..num_vizinhos {
@@ -232,7 +233,7 @@ fn busca_local<R: Rng + Sized>(rng: &mut R,
     // }
     // s
 
-    vnd(rng, inst, &s, num_vizinhos)
+    vnd(rng, inst, s, num_vizinhos)
 }
 
 pub struct Grasp<'a> {
