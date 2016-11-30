@@ -56,7 +56,7 @@ while restantes:
     restantes.pop()
     finalizados.append(c)
 
-    aid = c.split()[0]
+    aid = c.split()[1]
     saida = p.stdout
     print(aid, '\n', saida, end='\n\n')
 
