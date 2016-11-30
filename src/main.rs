@@ -14,6 +14,10 @@ const NUM_EXEC: u32 = 10;
 
 #[allow(dead_code)]
 fn teste_grasp(inst: &Instancia) {
+    unsafe {
+        instancia::CHAMADAS_FO = 0;
+    }
+
     println!("Grasp");
     let t = Instant::now();
     let (solucao, it) = Grasp::new(inst)
@@ -28,11 +32,17 @@ fn teste_grasp(inst: &Instancia) {
     println!("Iteração alvo: {}", it);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+    unsafe {
+        println!("Chamadas FO: {}", instancia::CHAMADAS_FO);
+    }
     println!("-------------------\n");
 }
 
 #[allow(dead_code)]
 fn teste_ag(inst: &Instancia) {
+    unsafe {
+        instancia::CHAMADAS_FO = 0;
+    }
     println!("AG");
     let t = Instant::now();
     let (solucao, it) = Ag::new(inst)
@@ -48,6 +58,9 @@ fn teste_ag(inst: &Instancia) {
     println!("Iteração alvo: {}", it);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
+    unsafe {
+        println!("Chamadas FO: {}", instancia::CHAMADAS_FO);
+    }
     println!("-------------------\n");
 }
 

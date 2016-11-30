@@ -8,6 +8,8 @@ use self::rand::Rng;
 
 pub const INF: i32 = 1e9 as i32;
 
+pub static mut CHAMADAS_FO: u64 = 0;
+
 pub type IdTarefa = usize;
 pub type Sequencia = Vec<IdTarefa>;
 
@@ -90,6 +92,10 @@ fn frequencias(sequencia: &Sequencia) -> Vec<u64> {
 
 impl Solucao {
     fn calcula_fo(inst: &Instancia, sequencia: &Sequencia) -> i32 {
+        unsafe {
+            CHAMADAS_FO += 1;
+        }
+
         if !is_factivel(sequencia, inst.num_tarefas()) {
             return INF;
         }
