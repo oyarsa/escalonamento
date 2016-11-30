@@ -10,8 +10,8 @@ operador_cruz = [0, 1]
 operador_mut = [0, 1]
 numero_grupos = 1
 
-combinacoes = list(product(taxa_mut, taxa_cruz, tam_pop, operador_cruz,
-                           operador_mut))
+combinacoes = list(product(tam_pop, taxa_cruz, operador_cruz, operador_mut,
+                           taxa_mut))
 numero_combinacoes = len(combinacoes)
 print('Numero de combinacoes: ', numero_combinacoes)
 
