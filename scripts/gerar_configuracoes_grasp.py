@@ -20,7 +20,7 @@ def getid(c):
 
 
 def comb2str(i, c):
-    return str(i) + '-' + getid(c) + ' ' + ' '.join(str(x) for x in c)
+    return 'grasp ' + str(i) + '-' + getid(c) + ' ' + ' '.join(str(x) for x in c)
 
 
 id_grupo = int(sys.argv[1])
