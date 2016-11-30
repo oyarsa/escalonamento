@@ -8,7 +8,7 @@ taxa_cruz = [0.95, 0.99]
 tam_pop = [200, 400, 800]
 operador_cruz = [0, 1]
 operador_mut = [0, 1]
-numero_grupos = 10
+numero_grupos = 1
 
 combinacoes = list(product(taxa_mut, taxa_cruz, tam_pop, operador_cruz,
                            operador_mut))

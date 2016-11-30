@@ -5,7 +5,7 @@ import sys
 
 alfa = [0.3, 0.5, 0.7]
 num_vizinhos = [15, 30, 60]
-numero_grupos = 10
+numero_grupos = 1
 
 combinacoes = list(product(alfa, num_vizinhos))
 numero_combinacoes = len(combinacoes)
