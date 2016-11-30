@@ -2,9 +2,10 @@
 
 import atexit
 import os
+import sys
 from subprocess import PIPE, run, STDOUT, CalledProcessError
 
-exe = "cargo run --release -- "
+exe = "cargo run --release --".split()
 restantes_file = "restantes.txt"
 finalizados_file = "finalizados.txt"
 result_folder = "resultados"
@@ -41,9 +42,9 @@ while restantes:
     c = restantes[-1]
     print('Config:', c)
 
-    infile = "TODO"
+    infile = sys.argv[1]
 
-    p = run([exe, infile, '-e'], input=c, stdout=PIPE, stderr=STDOUT,
+    p = run([*exe, infile, '-e'], input=c, stdout=PIPE, stderr=STDOUT,
             universal_newlines=True)
 
     try:
