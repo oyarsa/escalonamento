@@ -35,6 +35,7 @@ pub fn solve(inst: &Instancia,
         it += 1;
     }
 
+    println!("{} iterações", it);
     (best, it_alvo)
 }
 

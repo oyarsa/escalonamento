@@ -53,6 +53,7 @@ pub fn solve(inst: &Instancia,
         it += 1;
     }
 
+    println!("{} iterações", it);
     (pop.swap_remove(0), it_melhor)
 }
 

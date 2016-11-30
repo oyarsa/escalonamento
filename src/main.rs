@@ -18,7 +18,7 @@ fn teste_grasp(inst: &Instancia) {
     let t = Instant::now();
     let (solucao, it) = Grasp::new(inst)
         .max_iter(INF as u64)
-        .timeout(5)
+        .timeout(30)
         .alfa(0.3)
         .num_vizinhos(50)
         .solve();
@@ -37,7 +37,7 @@ fn teste_ag(inst: &Instancia) {
     let t = Instant::now();
     let (solucao, it) = Ag::new(inst)
         .max_iter(INF as u64)
-        .timeout(5)
+        .timeout(30)
         .mut_chance(0.3)
         .pop_tam(1000)
         .xo_chance(1.0)
