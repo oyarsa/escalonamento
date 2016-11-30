@@ -11,7 +11,7 @@ pub fn solve(inst: &Instancia,
              timeout: Duration, // 30s
              num_vizinhos: u32, // 15 30 60
              max_iter: u64 /* INF */)
-             -> (Solucao, u64) {
+             -> (Solucao, u64, u64) {
     let mut rng = rand::weak_rng();
     let t = Instant::now();
 
@@ -35,8 +35,7 @@ pub fn solve(inst: &Instancia,
         it += 1;
     }
 
-    println!("{} iterações", it);
-    (best, it_alvo)
+    (best, it_alvo, it)
 }
 
 #[allow(dead_code)]
@@ -281,7 +280,7 @@ impl<'a> Grasp<'a> {
     }
 
     #[allow(dead_code)]
-    pub fn solve(&self) -> (Solucao, u64) {
+    pub fn solve(&self) -> (Solucao, u64, u64) {
         solve(self.inst,
               self.alfa,
               Duration::from_secs(self.timeout),

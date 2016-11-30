@@ -29,7 +29,7 @@ pub fn solve(inst: &Instancia,
              cruz: Cruzamento, // metodo de cruzamento: OX, PMX
              mutacao: Mutacao, // método de mutação: Swap, 2-opt
              mut_chance: f64 /* 0.05 0.10 0.20 */)
-             -> (Solucao, u64) {
+             -> (Solucao, u64, u64) {
     let mut rng = rand::weak_rng();
     let mut pop = populacao_inicial(&mut rng, inst, pop_tam);
     let mut best_fo = pop[0].fo();
@@ -53,8 +53,7 @@ pub fn solve(inst: &Instancia,
         it += 1;
     }
 
-    println!("{} iterações", it);
-    (pop.swap_remove(0), it_melhor)
+    (pop.swap_remove(0), it_melhor, it)
 }
 
 #[allow(dead_code)]
@@ -287,7 +286,7 @@ impl<'a> Ag<'a> {
     }
 
     #[allow(dead_code)]
-    pub fn solve(&self) -> (Solucao, u64) {
+    pub fn solve(&self) -> (Solucao, u64, u64) {
         solve(self.inst,
               Duration::from_secs(self.timeout),
               self.max_iter,

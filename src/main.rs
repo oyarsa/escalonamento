@@ -20,7 +20,7 @@ fn teste_grasp(inst: &Instancia) {
 
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it) = Grasp::new(inst)
+    let (solucao, it_alvo, num_iter) = Grasp::new(inst)
         .max_iter(INF as u64)
         .timeout(15)
         .alfa(0.3)
@@ -29,7 +29,8 @@ fn teste_grasp(inst: &Instancia) {
     let tempo = t.elapsed();
 
     println!("Sequencia: {:?}", solucao.sequencia());
-    println!("Iteração alvo: {}", it);
+    println!("Iteração alvo: {}", it_alvo);
+    println!("Total iteraçõees: {}", num_iter);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
     unsafe {
@@ -45,7 +46,7 @@ fn teste_ag(inst: &Instancia) {
     }
     println!("AG");
     let t = Instant::now();
-    let (solucao, it) = Ag::new(inst)
+    let (solucao, it_alvo, num_iter) = Ag::new(inst)
         .max_iter(INF as u64)
         .timeout(15)
         .mut_chance(0.3)
@@ -55,7 +56,8 @@ fn teste_ag(inst: &Instancia) {
     let tempo = t.elapsed();
 
     println!("Sequencia: {:?}", solucao.sequencia());
-    println!("Iteração alvo: {}", it);
+    println!("Iteração alvo: {}", it_alvo);
+    println!("Total iteraçõees: {}", num_iter);
     println!("Fo: {}", solucao.fo());
     println!("Tempo: {}.{}", tempo.as_secs(), tempo.subsec_nanos());
     unsafe {
@@ -78,17 +80,18 @@ fn experimento_grasp(inst: Instancia, config: &[&str]) {
     let mut grasp = Grasp::new(&inst);
     grasp.alfa(alfa).num_vizinhos(num_vizinhos).max_iter(INF as u64).timeout(30);
 
-    println!("ID, iExec, FO, IterAlvo, Tempo");
+    println!("ID, iExec, FO, IterAlvo, TotalIter, Tempo");
     for i in 0..NUM_EXEC {
         let t = Instant::now();
-        let (solucao, iter) = grasp.solve();
+        let (solucao, iter_alvo, total_iter) = grasp.solve();
         let tempo = t.elapsed();
 
-        println!("{}, {}, {}, {}, {}.{}",
+        println!("{}, {}, {}, {}, {}, {}.{}",
                  id,
                  i,
                  solucao.fo(),
-                 iter,
+                 iter_alvo,
+                 total_iter,
                  tempo.as_secs(),
                  tempo.subsec_nanos());
     }
@@ -128,17 +131,18 @@ fn experimento_ag(inst: Instancia, config: &[&str]) {
         .mut_chance(mut_chance)
         .timeout(30);
 
-    println!("ID, iExec, FO, IterAlvo, Tempo");
+    println!("ID, iExec, FO, IterAlvo, TotalIter, Tempo");
     for i in 0..NUM_EXEC {
         let t = Instant::now();
-        let (solucao, iter) = ag.solve();
+        let (solucao, iter_alvo, total_iter) = ag.solve();
         let tempo = t.elapsed();
 
-        println!("{}, {}, {}, {}, {}.{}",
+        println!("{}, {}, {}, {}, {}, {}.{}",
                  id,
                  i,
                  solucao.fo(),
-                 iter,
+                 iter_alvo,
+                 total_iter,
                  tempo.as_secs(),
                  tempo.subsec_nanos());
     }
