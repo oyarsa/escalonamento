@@ -80,13 +80,13 @@ fn experimento_grasp(inst: Instancia, config: &[&str]) {
     let mut grasp = Grasp::new(&inst);
     grasp.alfa(alfa).num_vizinhos(num_vizinhos).max_iter(INF as u64).timeout(30);
 
-    println!("ID, iExec, FO, IterAlvo, TotalIter, Tempo");
+    println!("ID,iExec,FO,IterAlvo,TotalIter,Tempo");
     for i in 0..NUM_EXEC {
         let t = Instant::now();
         let (solucao, iter_alvo, total_iter) = grasp.solve();
         let tempo = t.elapsed();
 
-        println!("{}, {}, {}, {}, {}, {}.{}",
+        println!("{},{},{},{},{},{}.{}",
                  id,
                  i,
                  solucao.fo(),
@@ -131,13 +131,13 @@ fn experimento_ag(inst: Instancia, config: &[&str]) {
         .mut_chance(mut_chance)
         .timeout(30);
 
-    println!("ID, iExec, FO, IterAlvo, TotalIter, Tempo");
+    println!("ID,iExec,FO,IterAlvo,TotalIter,Tempo");
     for i in 0..NUM_EXEC {
         let t = Instant::now();
         let (solucao, iter_alvo, total_iter) = ag.solve();
         let tempo = t.elapsed();
 
-        println!("{}, {}, {}, {}, {}, {}.{}",
+        println!("{},{},{},{},{},{}.{}",
                  id,
                  i,
                  solucao.fo(),
