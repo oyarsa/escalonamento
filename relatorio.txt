@@ -1,0 +1,81 @@
+﻿Grupo: Italo Luis da Silva
+       Amanda Lemos Prado
+       Guilherme Cordeiro
+
+Meta-heurísticas escolhidas: GRASP-VND e AG
+
+Implemenentação dos algoritmos:
+    GRASP: a heurística de construção utilizada foi baseada no NEH,
+           de forma que a sequência inicial é ordenada pela data de entrega
+           e a lista candidata é obtida através do alfa% elementos na cabeça da
+           lista.
+           A busca local é o VND, com as estruturas de vizinhança inserção, swap,
+           swap adjacentes e swap xyz.
+    AG: a solução inicial é obtida através de uma permutação aleatória das tarefas,
+        a seleção é feita por roleta simples. Os operadores de cruzamento disponíveis
+        são o Ordered Crossover e o Partially Mapped Crossover. Os operadores de mutação
+        disponíveis são o swap aleatório e o two-opt aleatório. A próxima geração é obtida
+        preservando os melhores indivíduos e inserindo os filhos.
+
+Calibração dos algoritmos:
+    Foram escolhidas 5 instâncias (as primeiras 5 do conjunto), e para cada uma delas
+    foram executadas todas as combinações de parâmetros dos algoritmos. Cada combinação
+    foi executada 10 vezes. Com os resultados dessas execuções, as configurações foram comparadas
+    através da mediana da função objetivo, para cada instância. Cada execução foi limitada a 30s.
+
+    AG: a configuração 2-200.0.95.0.1.0.005 foi a melhor em 2 das 5 instâncias, com segundo lugar em mais uma,
+        sendo aqui escolhida como a melhor configuração. Ela possui população inicial de 200
+        indivíduos, taxa de cruzamento de 95%, operador de cruzamento PMX, operador de
+        mutação Two-Opt aleatório e taxa de mutação de 0.5%.
+    GRASP: a configuração 5-0.5.60 foi a melhor em 3 das 5 instâncias, sendo ainda
+           a segunda melhor nas outras duas. Ela possui um alfa de 50% e cada operador
+           de vizinhança é executado por 60 iterações.
+
+    Informações mais específicas sobre os resultados estão nos arquivos "melhores_ag.txt"
+    e "melhores_grasp.txt". Os arquivos de com os resultados dos algoritmos estão disponíveis
+    na pasta "resultados".
+
+Comparação entre AG e GRASP:
+    Instância  Algoritmo  Configuração           MedianaFO  NumeroIteracoes  IteracaoAlvo
+    1          AG         2-200.0.95.0.1.0.005   16179.0    6302.5           5302.5
+               GRASP      5-0.5.60               16109.0    1625.0           406.0
+    2          AG         35-800.0.95.0.1.0.01   14858.0    2085.0           1085.0
+               GRASP      5-0.5.60               14798.0    1612.5           190.5
+    3          AG         15-200.0.99.1.1.0.01   15875.0    4881.5           3881.5
+               GRASP      5-0.5.60               15770.5    1532.0           527.0
+    4          AG         2-200.0.95.0.1.0.005   15132.5    7291.5           6291.5
+               GRASP      8-0.7.60               15078.0    1511.0           391.0
+    5          AG         46-800.0.99.1.1.0.005  16557.5    3064.5           2064.5
+               GRASP      8-0.7.60               16502.0    1570.5           291.5
+
+    É possível observar a partir desses resultados que essa implementação do GRASP-VND
+    possui uma performance consideravelmente melhor que a implementação do AG. Motivos
+    para isso incluem mas não se resumem a: a implementação do GRASP-VND é baseada num
+    artigo elaborado durante uma pesquisa de mestrado, enquanto a implementação do AG
+    foi obtida a partir da conversão de um algoritmo para o TSP, desenvolvida durante
+    um fim de semana.
+    O GRASP-VND alcança resultados melhores em todas as instâncias, convergindo muito
+    mais rápido que o AG. Dado o nível de complexidade do problema apresentado (baixo),
+    é provável que uma heurística populacional não seja uma boa escolha. Uma heurística
+    construtiva como o GRASP provavelmente também será subótima comparada a alternativas
+    como o ILS e o SA, mas essa comparação será reservada para trabalhos futuros.
+
+
+Ambiente:
+    Máquina: instância t2.small da Amazon Web Services. O hardware específico não
+    é declarado, apenas que possuem processadores Intel Xeon de alta frequência,
+    limitados a um core.
+    Linguagem de programação: Rust (rustc 1.15.0-nightly (1c448574b 2016-11-28))
+    Sistema operacional: Amazon Linux 2016.09
+
+Referências:
+    O GRASP foi baseado no trabalho de Campos (2014)[1], em que ele implementa um GRASP-VND
+    para o problema de 3sASF.
+    O AG foi baseado num algoritmo implementado para o caixeiro viajante, disponível em
+    (https://github.com/oyarsa/tsp-rs). Nenhuma referência específica, apenas implementação
+    de algoritmos clássicos na literatura desse problema.
+
+[1] CAMPOS, Saulo Cunha; ARROYO, José Elias C.; GONÇALVES, Luciana Brugiolo. Uma heuristica grasp-vnd
+para o problema de sequenciamento de tarefas num ambiente assembly flowshop com três estágios e
+tempos de setup dependentes da sequência. In: Proceedings of the XLV Brazilian Symposium of Operational Research.
+(Natal-RN, Brazil, Setember 16-19, 2013). 2013.

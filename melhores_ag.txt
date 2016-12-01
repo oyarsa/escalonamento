@@ -4,6 +4,6 @@
 4) 2-200.0.95.0.1.0.005
 5) 2-200.0.95.0.1.0.005
 
-Por ser a melhor configuraçãom 3/5 instâncias, a melhor configuração é
+Por ser a melhor configuração em 3/5 instâncias, a melhor configuração é
     2-200.0.95.0.1.0.005
 ag 2-200.0.95.0.1.0.005 200 0.95 0 1 0.005
