@@ -60,7 +60,7 @@ while restantes:
     saida = p.stdout
     print(aid, '\n', saida, end='\n\n')
 
-    out_path = os.path.join(out_folder, aid + '.csv')
+    out_path = os.path.join(out_folder, infile + '-' + aid + '.csv')
     with open(out_path, 'w') as f:
         print(saida, file=f, end='')
 
