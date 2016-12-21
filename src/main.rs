@@ -20,12 +20,7 @@ fn teste_grasp(inst: &Instancia) {
 
     println!("Grasp");
     let t = Instant::now();
-    let (solucao, it_alvo, num_iter) = Grasp::new(inst)
-        .max_iter(INF as u64)
-        .timeout(15)
-        .alfa(0.3)
-        .num_vizinhos(50)
-        .solve();
+    let (solucao, it_alvo, num_iter) = Grasp::new(inst).solve();
     let tempo = t.elapsed();
 
     println!("Sequencia: {:?}", solucao.sequencia());

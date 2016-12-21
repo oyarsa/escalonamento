@@ -96,9 +96,6 @@ impl Solucao {
             CHAMADAS_FO += 1;
         }
 
-        if !is_factivel(sequencia, inst.num_tarefas()) {
-            return INF;
-        }
         let tempo_finalizacao = Solucao::executar_simulacao(inst, sequencia);
         sequencia.iter()
             .map(|&id| {

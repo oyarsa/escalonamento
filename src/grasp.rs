@@ -248,10 +248,10 @@ impl<'a> Grasp<'a> {
     pub fn new(inst: &Instancia) -> Grasp {
         Grasp {
             inst: inst,
-            alfa: 0.35,
-            timeout: u64::MAX,
-            num_vizinhos: 10,
-            max_iter: 40,
+            alfa: 0.5,
+            timeout: 30,
+            num_vizinhos: 60,
+            max_iter: u64::MAX,
         }
     }
 
